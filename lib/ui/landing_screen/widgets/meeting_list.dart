@@ -17,6 +17,19 @@ class MeetingList extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.watch<MeetingListController>();
 
+    if (controller.errorMessage != null) {
+      WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(controller.errorMessage ?? ''),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Colors.red,
+          ),
+        );
+        controller.errorMessage = null;
+      });
+    }
+
     return Container(
       child: Column(
         children: [
@@ -89,4 +102,3 @@ class MeetingList extends StatelessWidget {
     );
   }
 }
-
