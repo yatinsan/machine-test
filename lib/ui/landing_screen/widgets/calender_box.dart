@@ -1,74 +1,10 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:gap/gap.dart';
 import 'package:intl/intl.dart';
 import 'package:meetings/ui/core/theme/colors.dart';
 import 'package:meetings/ui/landing_screen/view_model/meeting_list_controller.dart';
 import 'package:provider/provider.dart';
-
-class MeetingList extends StatelessWidget {
-  const MeetingList({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final controller = context.watch<MeetingListController>();
-
-    return Container(
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Expanded(child: Text("Meeting List")),
-              FloatingActionButton(
-                onPressed: () {},
-                mini: true,
-                shape: StadiumBorder(),
-                foregroundColor: Colors.white,
-                child: Icon(Icons.add),
-              ),
-            ],
-          ),
-          Gap(8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              DropdownButton(
-                value: controller.selectedMonth,
-                items: List.generate(12, (index) {
-                  final date = DateTime.now().copyWith(month: index + 1);
-                  return DropdownMenuItem(
-                    value: index + 1,
-                    child: Text(DateFormat("MMM").format(date).toString()),
-                  );
-                }),
-                onChanged: (value) {
-                  controller.selectedMonth = value;
-                },
-              ),
-              DropdownButton(
-                value: controller.selectedYear,
-
-                items: List.generate(10, (index) {
-                  final date = (DateTime.now().year - 5 + index);
-                  return DropdownMenuItem(
-                    value: date,
-                    child: Text(date.toString()),
-                  );
-                }),
-                onChanged: (value) {
-                  controller.selectedYear = value;
-                },
-              ),
-            ],
-          ),
-          Gap(8),
-          CalenderBox(),
-        ],
-      ),
-    );
-  }
-}
 
 class CalenderBox extends StatelessWidget {
   const CalenderBox({super.key});
@@ -98,7 +34,7 @@ class CalenderBox extends StatelessWidget {
   DateTime getFirstWeekEndDate(int month, int year) {
     final endDayOfMonth = DateTime(year, month + 1, 0);
     final weekday = endDayOfMonth.weekday;
-    final startOfWeek = endDayOfMonth.add(Duration(days: weekday % 7 + 1));
+    final startOfWeek = endDayOfMonth.add(Duration(days: 7 - weekday % 7));
     return startOfWeek;
   }
 
@@ -122,26 +58,57 @@ class CalenderBox extends StatelessWidget {
       itemCount: lastWeekendDate.difference(firstWeekStartDate).inDays,
       itemBuilder: (context, index) {
         var buildDate = firstWeekStartDate.add(Duration(days: index));
-        log(buildDate.toString());
         final isToday = today == buildDate;
-        var isThisMonth = now.month == buildDate.month;
-        return Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: isToday ? Colors.lightGreen : null,
-            // border: Border.all(color: Colors.yellow)
-          ),
-          child: Center(
-            child: Text(
-              buildDate.day.toString(),
-              style: TextStyle(
-                color:
-                    isThisMonth
-                        ? isToday
-                            ? AppColor.tileBg
-                            : Colors.white
-                        : Colors.grey,
+        var isThisMonth = controller.selectedMonth == buildDate.month;
+        final isSelectedDate = controller.calenderSelectedDate == buildDate;
+        final hasMeeting =
+            controller.meetingDateList?.any(
+              (element) => DateTime.tryParse(element.date ?? '') == buildDate,
+            ) ??
+            false;
+
+        return InkWell(
+          onTap: () {
+            controller.calenderSelectedDate = buildDate;
+          },
+          child: AnimatedContainer(
+            duration: Duration(milliseconds: 300),
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: isToday ? Colors.lightGreen : null,
+              border: Border.all(
+                color: isSelectedDate ? Colors.lightGreen : Colors.transparent,
               ),
+              // border: Border.all(color: Colors.yellow)
+            ),
+            child: Stack(
+              children: [
+                Center(
+                  child: Text(
+                    buildDate.day.toString(),
+                    style: TextStyle(
+                      color:
+                          isThisMonth
+                              ? isToday
+                                  ? AppColor.tileBg
+                                  : Colors.white
+                              : Colors.grey,
+                    ),
+                  ),
+                ),
+                if (hasMeeting)
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: buildDate.isAfter(now) ? Colors.lightGreen : Colors.grey,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         );

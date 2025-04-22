@@ -3,33 +3,44 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:meetings/data/model/meeting_date_model.dart'
     show MeetingDateModel;
+import 'package:meetings/data/model/meeting_item_model.dart';
 import 'package:meetings/data/repo/meeting_repo.dart';
 import 'package:meetings/data/services/api_services.dart';
 import 'package:meetings/utils/api_error_handler.dart';
 import 'package:meetings/utils/dio.dart';
 
 class MeetingListController with ChangeNotifier {
-  MeetingListController(){
+  MeetingListController() {
     loadMeetings();
   }
 
-  int _selectedMonth = DateTime.now().month;
-  int _selectedYear = DateTime.now().year;
+  DateTime _calenderSelectedDate = DateTime.now();
+
+  DateTime get calenderSelectedDate => DateTime(
+    _calenderSelectedDate.year,
+    _calenderSelectedDate.month,
+    _calenderSelectedDate.day,
+  );
+
+  set calenderSelectedDate(DateTime value) {
+    _calenderSelectedDate = value;
+    notifyListeners();
+  }
 
   final meetingRepo = MeetingRepo(ApiServices(dio));
 
-  get selectedMonth => _selectedMonth;
+  get selectedMonth => _calenderSelectedDate.month;
 
-  get selectedYear => _selectedYear;
+  get selectedYear => _calenderSelectedDate.year;
 
   set selectedMonth(value) {
-    _selectedMonth = value;
+    _calenderSelectedDate = _calenderSelectedDate.copyWith(month: value);
     notifyListeners();
     loadMeetings();
   }
 
   set selectedYear(value) {
-    _selectedYear = value;
+    _calenderSelectedDate = _calenderSelectedDate.copyWith(year: value);
     notifyListeners();
     loadMeetings();
   }
@@ -75,6 +86,15 @@ class MeetingListController with ChangeNotifier {
       );
 
       meetingDateList = response.data;
+
+      // meetingDateList = [
+      //   MeetingDateModel(date: "2025-04-04", items: [MeetingItemModel(
+      //     id: "asdf",
+      //     title: "hww locad",
+      //     time: "8:00 AM"
+      //
+      //   )]),
+      // ];
     } catch (e) {
       hasError = true;
       errorMessage = apiErrorHandler(e);
