@@ -62,10 +62,12 @@ class CalenderBox extends StatelessWidget {
         var isThisMonth = controller.selectedMonth == buildDate.month;
         final isSelectedDate = controller.calenderSelectedDate == buildDate;
         final hasMeeting =
-            controller.meetingDateList?.any(
-              (element) => DateTime.tryParse(element.date ?? '') == buildDate,
-            ) ??
-            false;
+            controller.meetingDateList
+                ?.where(
+                  (element) =>
+                      DateTime.tryParse(element.date ?? '') == buildDate,
+                )
+                .firstOrNull;
 
         return InkWell(
           onTap: () {
@@ -75,9 +77,9 @@ class CalenderBox extends StatelessWidget {
             duration: Duration(milliseconds: 300),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isToday ? Colors.lightGreen : null,
+              color: isSelectedDate ? Colors.lightGreen : null,
               border: Border.all(
-                color: isSelectedDate ? Colors.lightGreen : Colors.transparent,
+                color: isToday ? Colors.lightGreen : Colors.transparent,
               ),
               // border: Border.all(color: Colors.yellow)
             ),
@@ -89,22 +91,31 @@ class CalenderBox extends StatelessWidget {
                     style: TextStyle(
                       color:
                           isThisMonth
-                              ? isToday
+                              ? isSelectedDate
                                   ? AppColor.tileBg
                                   : Colors.white
                               : Colors.grey,
+                      fontWeight: FontWeight.w600
                     ),
                   ),
                 ),
-                if (hasMeeting)
+                if (hasMeeting != null)
                   Align(
-                    alignment: Alignment.topRight,
+                    alignment: Alignment(0.9, -0.9),
                     child: Container(
                       width: 8,
                       height: 8,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: buildDate.isAfter(now) ? Colors.lightGreen : Colors.grey,
+                        color:
+                            (hasMeeting.items?.any(
+                                      (element) => element.conflicted == true,
+                                    ) ??
+                                    false)
+                                ? Colors.red
+                                : buildDate.isAfter(now)
+                                ? Colors.lightGreen
+                                : Colors.grey,
                       ),
                     ),
                   ),

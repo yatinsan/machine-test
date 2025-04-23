@@ -58,7 +58,7 @@ class SelectedDayMeetings extends StatelessWidget {
                       ),
                     ),
                   ),
-                  Row(
+                 if(meeting.conflicted == true) Row(
                     children: [
                       Icon(Icons.person, color: Colors.red),
                       Icon(Icons.person, color: Colors.red),
