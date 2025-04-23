@@ -13,14 +13,24 @@ class CalenderBox extends StatelessWidget {
   Widget build(BuildContext context) {
     final controller = context.watch<MeetingListController>();
 
-    return Container(
-      width: double.maxFinite,
-      padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: BoxDecoration(
-        color: AppColor.tileBg,
-        borderRadius: BorderRadius.circular(7),
+    return Dismissible(
+      key: GlobalKey(),
+      behavior: HitTestBehavior.deferToChild,
+      confirmDismiss: (direction) async {
+        controller.selectedMonth =
+            controller.selectedMonth + (direction.index == 2 ? 1 : -1);
+
+        return false;
+      },
+      child: Container(
+        width: double.maxFinite,
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppColor.tileBg,
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Column(children: [titleRow(), dateContent(controller)]),
       ),
-      child: Column(children: [titleRow(), dateContent(controller)]),
     );
   }
 
@@ -95,7 +105,7 @@ class CalenderBox extends StatelessWidget {
                                   ? AppColor.tileBg
                                   : Colors.white
                               : Colors.grey,
-                      fontWeight: FontWeight.w600
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
